@@ -1,0 +1,105 @@
+<!-- dashboard-layout.component.html -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans">
+
+  <!-- ── Top Nav ──────────────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white text-xl font-bold shadow">
+          ♻
+        </span>
+        <div>
+          <h1 class="text-sm font-bold text-slate-800 leading-tight">SWM Transparency Platform</h1>
+          <p class="text-xs text-slate-400">Bengaluru BBMP · 4-Stream Segregation</p>
+        </div>
+      </div>
+
+      <!-- Property Selector -->
+      <div class="flex items-center gap-3">
+        @if (svc.properties().length > 0) {
+          <label for="propSelector" class="text-xs text-slate-500 hidden sm:inline">Property:</label>
+          <select
+            id="propSelector"
+            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            (change)="onPropertyChange($event)"
+          >
+            @for (prop of svc.properties(); track prop.property_id) {
+              <option [value]="prop.property_id">
+                {{ prop.ward_name }} — {{ prop.property_id }}
+              </option>
+            }
+          </select>
+        }
+
+        <!-- Credits pill -->
+        @if (svc.selectedProperty()) {
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+            🌿 {{ svc.selectedProperty()!.green_credits_balance.toFixed(1) }} GC
+          </span>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Error Banner ──────────────────────────────────────────────────────── -->
+  @if (svc.errorMessage()) {
+    <div class="bg-red-50 border-b border-red-200 px-6 py-2 text-xs text-red-700 text-center">
+      ⚠️ {{ svc.errorMessage() }}
+    </div>
+  }
+
+  <!-- ── Main Content ───────────────────────────────────────────────────────── -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Property Info Bar -->
+    @if (svc.selectedProperty()) {
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-wrap gap-4 items-center text-sm">
+        <div>
+          <span class="text-xs text-slate-400 block">Ward</span>
+          <span class="font-semibold text-slate-700">
+            {{ svc.selectedProperty()!.ward_number }} — {{ svc.selectedProperty()!.ward_name }}
+          </span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-400 block">Address</span>
+          <span class="text-slate-600">{{ svc.selectedProperty()!.address }}</span>
+        </div>
+        <div class="ml-auto">
+          <span class="text-xs text-slate-400 block">Type</span>
+          <span
+            class="rounded-full px-2.5 py-0.5 text-xs font-medium"
+            [ngClass]="svc.selectedProperty()!.type === 'Household'
+              ? 'bg-sky-100 text-sky-700'
+              : 'bg-purple-100 text-purple-700'"
+          >
+            {{ svc.selectedProperty()!.type }}
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- Impact Metrics (top row) -->
+    <app-impact-metrics />
+
+    <!-- Bottom 2-col grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <!-- Timeline (wider) -->
+      <div class="lg:col-span-3 rounded-xl border bg-white p-5 shadow-sm">
+        <app-waste-lineage-timeline />
+      </div>
+
+      <!-- Mint Credits (narrower) -->
+      <div class="lg:col-span-2 rounded-xl border bg-white p-5 shadow-sm">
+        <app-mint-credits />
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Footer ────────────────────────────────────────────────────────────── -->
+  <footer class="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    SWM Transparency Platform · Bengaluru BBMP · Demo Build
+  </footer>
+
+</div>

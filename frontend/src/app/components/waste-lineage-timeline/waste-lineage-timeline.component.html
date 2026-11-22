@@ -1,0 +1,128 @@
+<!-- waste-lineage-timeline.component.html -->
+<section class="space-y-4">
+  <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500">
+    Waste Lineage Timeline
+  </h2>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="flex items-center gap-3 text-slate-400 py-8">
+      <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <span class="text-sm">Loading lineage data…</span>
+    </div>
+  }
+
+  <!-- No data -->
+  @if (!isLoading() && !lineage()) {
+    <div class="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
+      Select a property to view its waste lineage.
+    </div>
+  }
+
+  <!-- Timeline -->
+  @if (!isLoading() && lineage()) {
+    <!-- Batch header -->
+    <div class="rounded-xl border bg-slate-50 p-4 flex flex-wrap gap-4 items-center">
+      <div>
+        <span class="text-xs text-slate-400 block">Batch ID</span>
+        <code class="text-xs font-mono text-slate-600 break-all">{{ lineage()!.batch.batch_id }}</code>
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 block">Waste Type</span>
+        <span class="text-sm font-semibold" [ngClass]="wasteTypeColor()">
+          {{ lineage()!.batch.waste_type }}
+        </span>
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 block">Initial Weight</span>
+        <span class="text-sm font-semibold text-slate-700">
+          {{ lineage()!.batch.initial_weight_kg }} kg
+        </span>
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 block">Collected On</span>
+        <span class="text-sm text-slate-600">
+          {{ lineage()!.batch.collected_on | date : 'dd MMM yyyy, HH:mm' }}
+        </span>
+      </div>
+      <div class="ml-auto">
+        <span class="text-xs text-slate-400 block">Credits Minted</span>
+        <span class="text-sm font-bold text-amber-600">
+          {{ lineage()!.batch.credits_minted }} GC
+        </span>
+      </div>
+    </div>
+
+    <!-- Vertical timeline -->
+    <ol class="relative ml-4 border-l-2 border-slate-200 space-y-0">
+      @for (step of steps(); track step.label; let last = $last) {
+        <li class="ml-6 pb-8" [class.pb-0]="last">
+          <!-- Dot -->
+          <span
+            class="absolute -left-3.5 flex h-7 w-7 items-center justify-center rounded-full ring-4 ring-white"
+            [ngClass]="{
+              'bg-emerald-500': step.isCompleted,
+              'bg-sky-400 animate-pulse': step.isActive,
+              'bg-slate-200': !step.isCompleted && !step.isActive
+            }"
+          >
+            @if (step.isCompleted) {
+              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            } @else if (step.isActive) {
+              <span class="w-2 h-2 bg-white rounded-full block"></span>
+            } @else {
+              <span class="w-2 h-2 bg-slate-400 rounded-full block"></span>
+            }
+          </span>
+
+          <!-- Step content -->
+          <div class="pl-2">
+            <h3
+              class="text-sm font-semibold"
+              [ngClass]="{
+                'text-emerald-700': step.isCompleted,
+                'text-sky-600': step.isActive,
+                'text-slate-400': !step.isCompleted && !step.isActive
+              }"
+            >
+              {{ step.label }}
+            </h3>
+
+            @if (step.event) {
+              <div class="mt-1.5 rounded-lg border bg-white p-3 shadow-sm space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs font-medium"
+                    [ngClass]="statusBadge(step.event.status)"
+                  >{{ step.event.status }}</span>
+                  <span class="text-xs text-slate-400">
+                    {{ step.event.timestamp | date : 'dd MMM yyyy, HH:mm' }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-600">
+                  <span class="font-medium">📍 </span>{{ step.event.location }}
+                </p>
+                <p class="text-xs text-slate-600">
+                  <span class="font-medium">⚖️ </span>{{ step.event.weight_kg }} kg recorded
+                </p>
+                @if (step.event.notes) {
+                  <p class="text-xs text-slate-500 italic border-t pt-1 mt-1">
+                    "{{ step.event.notes }}"
+                  </p>
+                }
+              </div>
+            } @else {
+              <p class="text-xs text-slate-400 mt-1">Pending…</p>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  }
+</section>

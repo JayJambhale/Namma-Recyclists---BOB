@@ -1,0 +1,111 @@
+<!-- mint-credits.component.html -->
+<section class="space-y-4">
+  <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500">
+    Simulate Mint Green Credits
+  </h2>
+
+  <div class="rounded-xl border bg-white p-5 shadow-sm space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Waste Type -->
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">Waste Type</label>
+        <select
+          class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          [value]="formData().waste_type"
+          (change)="updateField('waste_type', $any($event.target).value)"
+        >
+          @for (t of wasteTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Node Type -->
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">Node Type</label>
+        <select
+          class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          [value]="formData().node_type"
+          (change)="updateField('node_type', $any($event.target).value)"
+        >
+          @for (n of nodeTypes; track n) {
+            <option [value]="n">{{ n }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Weight -->
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">Weight (kg)</label>
+        <input
+          type="number"
+          min="0.1"
+          step="0.1"
+          class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          [value]="formData().weight_kg"
+          (input)="updateField('weight_kg', +$any($event.target).value)"
+        />
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="block text-xs font-medium text-slate-600 mb-1">Location</label>
+        <input
+          type="text"
+          class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          [value]="formData().location"
+          (input)="updateField('location', $any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-xs font-medium text-slate-600 mb-1">Notes (optional)</label>
+      <input
+        type="text"
+        class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        [value]="formData().notes ?? ''"
+        (input)="updateField('notes', $any($event.target).value)"
+        placeholder="e.g. Well segregated, no contamination"
+      />
+    </div>
+
+    <!-- Submit -->
+    <button
+      (click)="submit()"
+      [disabled]="submitState() === 'loading' || !svc.selectedProperty()"
+      class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      @if (submitState() === 'loading') {
+        <span class="flex items-center justify-center gap-2">
+          <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          Auditing via LangGraph…
+        </span>
+      } @else {
+        🌿 Run Audit &amp; Mint Credits
+      }
+    </button>
+
+    <!-- Result -->
+    @if (submitState() === 'success' && lastResult()) {
+      <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-1">
+        <p class="text-sm font-semibold text-emerald-700">
+          {{ lastResult()!.audit_passed ? '✅ Audit Passed' : '❌ Audit Failed' }}
+        </p>
+        <p class="text-xs text-slate-600">Credits Minted: <strong>{{ lastResult()!.credits_minted }} GC</strong></p>
+        <p class="text-xs text-slate-600">New Balance: <strong>{{ lastResult()!.new_balance }} GC</strong></p>
+        <p class="text-xs text-slate-500 italic mt-1">"{{ lastResult()!.audit_reasoning }}"</p>
+      </div>
+    }
+
+    @if (submitState() === 'error') {
+      <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-xs text-red-700">
+        Error: {{ errorMsg() }}
+      </div>
+    }
+  </div>
+</section>
